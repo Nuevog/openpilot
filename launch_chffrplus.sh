@@ -17,13 +17,20 @@ function agnos_init {
   sudo chmod 660 /dev/adsprpc-smd /dev/ion /dev/kgsl-3d0
 
   # Check if AGNOS update is required
-  if [ $(< /VERSION) != "$AGNOS_VERSION" ]; then
-    AGNOS_PY="$DIR/system/hardware/tici/agnos.py"
-    MANIFEST="$DIR/system/hardware/tici/agnos.json"
-    if $AGNOS_PY --verify $MANIFEST; then
-      sudo reboot
+  if [ -f "/VERSION" ]; then
+    CURRENT_VERSION=$(cat /VERSION)
+    if [ "$CURRENT_VERSION" != "$AGNOS_VERSION" ]; then
+      AGNOS_PY="$DIR/system/hardware/tici/agnos.py"
+      MANIFEST="$DIR/system/hardware/tici/agnos.json"
+      if [ -f "$AGNOS_PY" ] && [ -f "$MANIFEST" ]; then
+        if $AGNOS_PY --verify $MANIFEST; then
+          sudo reboot
+        fi
+        $DIR/system/hardware/tici/updater $AGNOS_PY $MANIFEST
+      else
+        echo "AGNOS update files not found, continuing with current version"
+      fi
     fi
-    $DIR/system/hardware/tici/updater $AGNOS_PY $MANIFEST
   fi
 }
 
@@ -70,14 +77,17 @@ function launch {
   export PYTHONPATH="$PWD"
 
   # hardware specific init
-  if [ -f /AGNOS ]; then
+  if [ -f /AGNOS ] || [ -f /TICI ]; then
     agnos_init
   fi
 
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
 
-  python ./opendbc/car/hyundai/values.py > /data/params/d/SupportedCars
+  # Check if the car values file exists before trying to use it
+  if [ -f "./opendbc/car/hyundai/values.py" ]; then
+    python ./opendbc/car/hyundai/values.py > /data/params/d/SupportedCars
+  fi
 
   # start manager
   cd system/manager
