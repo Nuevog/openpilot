@@ -618,7 +618,13 @@ CommunityPanel::CommunityPanel(SettingsWindow *parent) : ListWidget(parent) {
       "../assets/offroad/icon_road.png",
       false,
     },
-
+    {
+      "HyundaiCameraSCC",
+      tr("Hyundai Camera SCC Mode"),
+      tr("Set Hyundai Camera SCC mode (0: Disabled, 1: Default, 2: Alternative, 3: Custom)"),
+      "../assets/offroad/icon_road.png",
+      true,
+    },
     {
       "CanFdHda2",
       tr("CAN-FD HDA2"),
@@ -626,7 +632,6 @@ CommunityPanel::CommunityPanel(SettingsWindow *parent) : ListWidget(parent) {
       "../assets/offroad/icon_road.png",
       false,
     },
-
     {
       "CruiseStateControl",
       tr("Openpilot controls Cruise State (Experimental)"),

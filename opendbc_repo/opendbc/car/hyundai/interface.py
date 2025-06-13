@@ -118,7 +118,14 @@ class CarInterface(CarInterfaceBase):
       ret.enableBsm = 0x58b in fingerprint[0]
 
     ret.sccBus = 2 if (candidate in CAMERA_SCC_CAR or Params().get_bool('SccOnBus2')) else 0 
-    Params().put("HyundaiCameraSCC", b"1")  # ✅ 강제 설정 추가
+    camera_scc_mode = Params().get_int("HyundaiCameraSCC") or 1  # Default to 1 if not set
+    if camera_scc_mode > 0:  # Only enable camera SCC if mode is not 0
+        ret.flags |= HyundaiFlags.CAMERA_SCC.value
+        if camera_scc_mode == 2:  # Alternative mode
+            ret.flags |= HyundaiFlags.CANFD_CAMERA_SCC.value
+        elif camera_scc_mode == 3:  # Custom mode
+            ret.flags |= HyundaiFlags.CANFD_CAMERA_SCC.value | HyundaiFlags.CANFD_LKA_STEERING.value
+
     # *** panda safety config ***
     if ret.flags & HyundaiFlags.CANFD:
       cfgs = [get_safety_config(structs.CarParams.SafetyModel.hyundaiCanfd), ]
